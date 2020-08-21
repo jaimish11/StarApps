@@ -1,0 +1,125 @@
+<html>
+<head>
+    
+    <style>
+        /*General Styles*/
+        .container{
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           width:100vw;
+           height:100vh;
+        }
+        .card{
+            width:60%;
+            height:60%;
+            background-color: #f1f1f1;
+            padding:40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: start;
+           
+        }
+        .card-content{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+        }
+
+        /*Server styles*/
+        .server-list-container{
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            justify-content: start;
+        }
+        .server-box-container{
+            display: flex;
+            flex-direction: row;
+        }
+        .server-box{
+            width:32px;
+            height:32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid black;
+
+        }
+        
+
+        /*Task progress bar styles*/
+
+        .task-list-container{
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            justify-content: start;
+        }
+        .task-bar-container{
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            justify-content: start;
+        }
+        /* .progress-value{
+            position: absolute;
+            left: 10px;
+            color: white;
+            line-height: 1.6em;
+        }
+        progress[value]{
+            height: 20px;
+            width: 200px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: #f1f1f1;
+            border: 3px solid purple;
+            border-radius: 10px;
+        } */
+    </style>
+</head>
+
+
+<body>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-title"><h2>Task Manager</h2></div>
+            <div class="card-content">
+                
+                <div class="server">
+                    <div class="card-subtitle"><h2>Server</h2></div>
+                    <div class="button-container">
+                        <button onclick="addServer();">Add Server</button>
+                        <button onclick="removeServer();">Remove Server</button>
+                    </div>
+                    <div class="server-list-container">
+
+                    </div>
+
+                </div>
+                <div class="task">
+                    <div class="card-subtitle"><h2>Tasks</h2></div>
+                    <input id="task-input" type="number" value="1" required><button onclick="addTask();" >Add Tasks</button>
+                    <div class="task-list-container">
+                       
+                       
+                    </div>
+                </div>
+                
+                
+            </div>
+           
+
+            
+            
+            
+        </div>
+    </div>
+   
+    <script src="taskManager.js"></script>
+</body>
+</html>
