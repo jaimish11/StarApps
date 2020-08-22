@@ -1,9 +1,10 @@
 var serverStatusList = {
 }
-const TASK_DURATION = 10000;
+const TASK_DURATION = 3000;
 const MAX_SERVERS = 10;
 var taskQueue = [];
 var pendingTasks = 0;
+var serversToRemove = 0;
 
 
 //Checks server status - returns first available server
@@ -39,8 +40,10 @@ function createTaskProgressBar(serverListContainer, availableServerNumber=null, 
     taskProgressBar.setAttribute("id","task-progress-bar-"+i);
     taskProgressBar.setAttribute("max",TASK_DURATION);
     taskProgressBar.setAttribute("value","0");
-    console.log(serverStatusList);
-    debugger;
+    
+   
+
+    
     serverListContainer.querySelector('#server-'+availableServerNumber).appendChild(taskProgressBar);
     toggleServer(availableServerNumber, true);
 
@@ -60,33 +63,42 @@ function createTaskProgressBar(serverListContainer, availableServerNumber=null, 
             clearInterval(taskProgressBarIntervalID);
             toggleServer(availableServerNumber, false);
             console.log('Pending tasks'+pendingTasks);
-            if(pendingTasks==0){
-                //Always keep 1 server active - delete 2 to N servers
-                var serverBox = serverListContainer.firstElementChild.nextElementSibling;
-                
-                
-                if(serverBox) {
-                    var serverToRemove = serverBox.id.substr(-1);
-                    serverBox.parentNode.removeChild(serverBox);
-                    delete serverStatusList[serverToRemove];
-                    console.log(serverStatusList);
-
-                }
-                    
-            }
-            else{
-                //debugger;
-                availableServerNumber = checkServerAvailability();
-                if(Number.isInteger(availableServerNumber)){
-                    runPendingTasks(availableServerNumber);
-                }
-                    
-            }
             setTimeout(function(){
+
                 taskProgressBar.parentNode.removeChild(taskProgressBar);
+               
+                if(serversToRemove>0){
+                    for(let i=1;i<=serversToRemove;i++, serversToRemove--){
+                        
+                        var serverBoxToRemove = serverListContainer.lastElementChild;
+                        var serverIDToRemove = serverListContainer.lastElementChild.id.substr(-1);
+                        delete serverStatusList[serverIDToRemove];
+                        serverBoxToRemove.parentNode.removeChild(serverBoxToRemove);
+                    }
+                }
+                if(pendingTasks==0){
+                    //Always keep 1 server active - delete 2 to N servers
+                    // var serverBox = serverListContainer.firstElementChild.nextElementSibling;
                 
-                //console.log(serverStatusList);
+                
+                    // if(serverBox) {
+                    //     var serverToRemove = serverBox.id.substr(-1);
+                    //     serverBox.parentNode.removeChild(serverBox);
+                    //     delete serverStatusList[serverToRemove];
+                    //     console.log(serverStatusList);
+
+                    // }
                     
+                }
+                else{
+                    //debugger;
+                    availableServerNumber = checkServerAvailability();
+                    if(Number.isInteger(availableServerNumber)){
+                        runPendingTasks(availableServerNumber);
+                    }
+                    
+                }
+                //console.log(serverStatusList);
             },2000);
     
         }
@@ -131,18 +143,25 @@ function addServer(firstime=false){
     //Get most recent server
     //var addedServerID = '';
     console.log(Object.keys(serverStatusList));
-    
+    console.log(serverStatusList);
     //addedServerID = (firstime)?Object.keys(serverStatusList).length+1:Object.keys(serverStatusList).length;
     var addedServerID = Object.keys(serverStatusList).length+1;
-    
     console.log('Added server ID '+addedServerID);
-    //debugger;
+
+    (firstime)?document.querySelector('.remove-server-btn').disabled = true:document.querySelector('.remove-server-btn').disabled = false;
+    (firstime)?document.querySelector('.remove-server-btn').className+=" disabled":document.querySelector('.remove-server-btn').classList.remove("disabled");
+
     //A maximum of 10 servers can be added
     if(addedServerID<=MAX_SERVERS){
         createServerBox(addedServerID);
         serverStatusList[addedServerID] = false;
         runPendingTasks(addedServerID);
+        
 
+    }
+    if(addedServerID == "10"){
+        document.querySelector('.add-server-btn').disabled = true
+        document.querySelector('.add-server-btn').className+=" disabled"; 
     }
 
 }
@@ -152,11 +171,20 @@ function removeServer(){
     var lastServerBox = serverListContainer.lastElementChild;
     var serverIsBusy = (lastServerBox.childNodes.length == 2)?true:false;
     var lastServerID = serverListContainer.lastElementChild.id.substr(-1);
+    serversToRemove++;
     //debugger;
     //Remove server if idle (do not remove if server to remove is #1)
     if(!serverIsBusy && lastServerID != "1"){
+        document.querySelector('.add-server-btn').disabled = false;  
+        document.querySelector('.add-server-btn').classList.remove("disabled");
         lastServerBox.parentNode.removeChild(lastServerBox);
         delete serverStatusList[lastServerID];
+    }
+    if(lastServerID == "2" || lastServerID == "1"){
+        document.querySelector('.add-server-btn').disabled = false;  
+        document.querySelector('.add-server-btn').classList.remove("disabled");
+        document.querySelector('.remove-server-btn').disabled = true  
+        document.querySelector('.remove-server-btn').className+=" disabled";
     }
 
 
@@ -201,56 +229,63 @@ function deleteTask(task){
 
 //Creates task progress bar
 function createTask(serverListContainer, noOfTasks, addedServerID){
-    pendingTasks = noOfTasks;
-    console.log('Created task --- now pending'+pendingTasks);
-    for(let i=1;i<=noOfTasks;i++){  
-        //debugger;
-       
-        //Server availability check
-        //debugger;
-        var availableServerNumber = checkServerAvailability();
-        //debugger;
-        
-        if(Number.isInteger(availableServerNumber)){
-            
+    
+    pendingTasks += parseInt(noOfTasks,10);
+    if(pendingTasks <= 99){
+        console.log('Created task --- now pending'+pendingTasks);
+        for(let i=1;i<=noOfTasks;i++){  
             //debugger;
-            pendingTasks--;
-            console.log('Server is available --- Pending taks '+pendingTasks);
-            createTaskProgressBar(serverListContainer, availableServerNumber, addedServerID, i);
+       
+            //Server availability check
+            //debugger;
+            var availableServerNumber = checkServerAvailability();
+            //debugger;
+        
+            if(Number.isInteger(availableServerNumber)){
+            
+                //debugger;
+                pendingTasks--;
+                console.log('Server is available --- Pending taks '+pendingTasks);
+                createTaskProgressBar(serverListContainer, availableServerNumber, addedServerID, i);
             
             
 
-        }
-        else{
-            //debugger
-            //No server available, add tasks to queue
-            //Task container (for bar and delete button)
-            var taskContainer = document.createElement('div');
-            taskContainer.setAttribute("class", "task-bar-container")
-            taskContainer.setAttribute("id", "task-"+i);
+            }
+            else{
+                //debugger
+                //No server available, add tasks to queue
+                //Task container (for bar and delete button)
+                var taskContainer = document.createElement('div');
+                taskContainer.setAttribute("class", "task-bar-container")
+                taskContainer.setAttribute("id", "task-"+i);
 
-            //Actual task progress bar
-            var taskProgressBar = document.createElement('progress');
-            taskProgressBar.setAttribute("class","task-progress-bar");
-            taskProgressBar.setAttribute("id","task-progress-bar-"+i);
-            taskProgressBar.setAttribute("max",TASK_DURATION);
-            taskProgressBar.setAttribute("value","0");
+                //Actual task progress bar
+                var taskProgressBar = document.createElement('progress');
+                taskProgressBar.setAttribute("class","task-progress-bar");
+                taskProgressBar.setAttribute("id","task-progress-bar-"+i);
+                taskProgressBar.setAttribute("max",TASK_DURATION);
+                taskProgressBar.setAttribute("value","0");
 
-            //Delete button
-            var deleteTaskBtn = document.createElement('button');
-            deleteTaskBtn.setAttribute("id","delete-btn-"+i);
-            deleteTaskBtn.innerHTML = "DEL";
-            deleteTaskBtn.setAttribute("onclick", "deleteTask("+i+");");
+                //Delete button
+                var deleteTaskBtn = document.createElement('button');
+                deleteTaskBtn.setAttribute("id","delete-btn-"+i);
+                deleteTaskBtn.innerHTML = "DEL";
+                deleteTaskBtn.setAttribute("onclick", "deleteTask("+i+");");
 
-            var taskListContainer = document.querySelector('.task-list-container');
-            taskContainer.appendChild(taskProgressBar);
-            taskContainer.appendChild(deleteTaskBtn);
-            taskListContainer.appendChild(taskContainer);
+                var taskListContainer = document.querySelector('.task-list-container');
+                taskContainer.appendChild(taskProgressBar);
+                taskContainer.appendChild(deleteTaskBtn);
+                taskListContainer.appendChild(taskContainer);
             
 
-        }
+            }
    
+        }
     }
+    else{
+        alert("can't have more than 99 pending tasks");
+    }
+    
 
    
    

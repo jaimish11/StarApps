@@ -3,6 +3,9 @@
     
     <style>
         /*General Styles*/
+        h1{
+            margin:0px;
+        }
         .container{
            display: flex;
            flex-direction: column;
@@ -28,6 +31,10 @@
         }
 
         /*Server styles*/
+        .server{
+            padding-right: 5vw;
+            border-right: 1px solid darkgray;
+        }
         .server-list-container{
             display: flex;
             flex-direction: column;
@@ -37,6 +44,8 @@
         .server-box-container{
             display: flex;
             flex-direction: row;
+            padding-right: 10px;
+            border: 1px solid black;
         }
         .server-box{
             width:32px;
@@ -44,7 +53,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid black;
+            margin: auto 0px;
+            
 
         }
         
@@ -79,6 +89,176 @@
             border: 3px solid purple;
             border-radius: 10px;
         } */
+        .task-control{
+            display: flex;
+        }
+        .task-progress-bar{
+            width:100%;
+            margin:10px 0px;
+            border:3px solid #8F72B3;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        progress[value]::-moz-progress-bar{
+            background-color: #8F72B3;
+        }
+        progress[value]::-webkit-progress-bar{
+            background-color: #8F72B3;
+        }
+        /* .progress-inner{
+            height: 40px;
+            animation: progressbar-countup;
+            animation-duration: 10s;
+            animation-iteration-count: 1;
+            animation-fill-mode: forwards;
+            -moz-animation-play-state: paused ;
+            animation-play-state: paused ;
+            -moz-animation-timing-function: linear;
+            animation-timing-function: linear;
+        }
+        @keyframes progressbar-countup{
+            0%{
+                width: 0%;
+                background: #fff;
+            }
+            100%{
+                width: 100%;
+                background: purple;
+            }
+        } */
+
+        /*Button styles */
+        .material-btn{
+            font-size: 1rem;
+            color: #fff;
+            text-align: center;
+            padding: 1.2rem 2rem;
+            
+            border-radius: 4px;
+            -moz-user-select: -moz-none;
+            -ms-user-select: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -moz-transition: box-shadow 0.5s cubic-bezier(0.64, 0.09, 0.08, 1);
+            -o-transition: box-shadow 0.5s cubic-bezier(0.64, 0.09, 0.08, 1);
+            -webkit-transition: box-shadow 0.5s cubic-bezier(0.64, 0.09, 0.08, 1);
+            transition: box-shadow 0.5s cubic-bezier(0.64, 0.09, 0.08, 1);
+            -moz-box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.25), 0 2px 10px 0 rgba(0, 0, 0, 0.25);
+            -webkit-box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.25), 0 2px 10px 0 rgba(0, 0, 0, 0.25);
+            box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.25), 0 2px 10px 0 rgba(0, 0, 0, 0.25);
+            border:0;
+        }
+        .btn:hover {
+            -moz-box-shadow: 0 6px 15px 0 rgba(0, 0, 0, 0.16), 0 6px 30px 0 rgba(0, 0, 0, 0.29);
+            -webkit-box-shadow: 0 6px 15px 0 rgba(0, 0, 0, 0.16), 0 6px 30px 0 rgba(0, 0, 0, 0.29);
+            box-shadow: 0 6px 15px 0 rgba(0, 0, 0, 0.16), 0 6px 30px 0 rgba(0, 0, 0, 0.29);
+        }
+        .btn.purple{
+            background-color:#8F72B3;
+        }
+        .btn.disabled{
+            background-color: #E6E6FA;
+            
+        }
+        .btn.disabled:hover{
+            box-shadow: none;
+        }
+        .button-container{
+            padding-bottom: 20px;
+        }
+        .add-task-btn{
+            margin-left: 1vw;
+        }
+        .remove-server-btn{
+            margin-left: 1vw;
+        }
+
+        /*Input field styles*/
+        input{
+            font-size:18px;
+            padding:10px 10px 10px 5px;
+            display:block;
+            width:300px;
+            border:none;
+            border-bottom:1px solid #757575;
+            width:10vw;
+        }
+        @media(min-width: 769px){
+            input{
+                width:4vw;
+            }
+        }
+        
+        input:focus{ 
+            outline:none;
+        }
+        label{
+            color:#999; 
+            font-size:18px;
+            font-weight:normal;
+            position:absolute;
+            pointer-events:none;
+            left:5px;
+            top:10px;
+            transition:0.2s ease all; 
+            -moz-transition:0.2s ease all; 
+            -webkit-transition:0.2s ease all;
+        }
+        input:focus ~ label, input:valid ~ label{
+            top:-20px;
+            font-size:14px;
+            color:#5264AE;
+        }
+
+        .bar{ 
+            position:relative; 
+            display:block; 
+            width:10vw; 
+        }
+        @media(min-width: 769px){
+            .bar{
+                width:4vw;
+            }
+        }
+        .bar:before, .bar:after 	{
+            content:'';
+            height:2px; 
+            width:0;
+            bottom:1px; 
+            position:absolute;
+            background:#5264AE; 
+            transition:0.2s ease all; 
+            -moz-transition:0.2s ease all; 
+            -webkit-transition:0.2s ease all;
+        }
+        .bar:before {
+            left:50%;
+        }
+        .bar:after {
+            right:50%; 
+        }
+
+        /* active state */
+        input:focus ~ .bar:before, input:focus ~ .bar:after {
+            width:50%;
+        }
+        .highlight {
+            position:absolute;
+            height:60%; 
+            width:100px; 
+            top:25%; 
+            left:0;
+            pointer-events:none;
+            opacity:0.5;
+        }
+
+        /* active state */
+        input:focus ~ .highlight {
+            -webkit-animation:inputHighlighter 0.3s ease;
+            -moz-animation:inputHighlighter 0.3s ease;
+            animation:inputHighlighter 0.3s ease;
+        }
+
     </style>
 </head>
 
@@ -87,14 +267,14 @@
 
     <div class="container">
         <div class="card">
-            <div class="card-title"><h2>Task Manager</h2></div>
+            <div class="card-title"><h1>Task Manager</h1></div>
             <div class="card-content">
                 
                 <div class="server">
                     <div class="card-subtitle"><h2>Server</h2></div>
                     <div class="button-container">
-                        <button onclick="addServer();">Add Server</button>
-                        <button onclick="removeServer();">Remove Server</button>
+                        <button class="add-server-btn btn material-btn purple" onclick="addServer();">Add Server</button>
+                        <button class="remove-server-btn btn material-btn purple" onclick="removeServer();">Remove Server</button>
                     </div>
                     <div class="server-list-container">
 
@@ -103,7 +283,16 @@
                 </div>
                 <div class="task">
                     <div class="card-subtitle"><h2>Tasks</h2></div>
-                    <input id="task-input" type="number" value="1" required><button onclick="addTask();" >Add Tasks</button>
+                    <div class="task-control">
+                        <div class="input-group">
+                            <input id="task-input" type="number" value="1" max="99" required>
+                            <span class="highlight"></span>
+                            <span class="bar"></span>
+                            <label>Tasks</label>
+                        </div>
+                        <button class="add-task-btn btn material-btn purple" onclick="addTask();" >Add Tasks</button>
+                    </div>
+                    
                     <div class="task-list-container">
                        
                        
@@ -121,5 +310,7 @@
     </div>
    
     <script src="taskManager.js"></script>
+    <script src="listeners.js"></script>
+    <!-- <script src="taskManagerProgressDiv.js"></script> -->
 </body>
 </html>
