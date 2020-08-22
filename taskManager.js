@@ -2,11 +2,34 @@ var serverStatusList = {
 }
 const TASK_DURATION = 3000;
 const MAX_SERVERS = 10;
+const ALERT_DURATION = 5000;
 var taskQueue = [];
 var pendingTasks = 0;
 var serversToRemove = 0;
 
 
+function alert(message){
+
+    var alert = document.createElement('div');
+    var existingAlert = document.querySelector('.alert-error');
+    var cardTitle = document.querySelector('.card-title');
+    alert.setAttribute("class","alert-error");
+    var alertText = document.createElement('span');
+    alertText.innerHTML = "<strong>"+message+"</strong>";
+    alert.appendChild(alertText);
+    if(!existingAlert){
+        cardTitle.parentNode.insertBefore(alert, cardTitle.nextSibling);
+    }
+    else{
+        existingAlert.parentNode.insertBefore(alert, existingAlert.nextSibling);
+    }
+    
+    
+   
+    setTimeout(function(){
+        alert.parentElement.removeChild(alert);
+    },ALERT_DURATION);
+}
 //Checks server status - returns first available server
 function checkServerAvailability(){
     var serverIsAvailable = false;
@@ -35,6 +58,7 @@ function checkServerAvailability(){
 }
 
 function createTaskProgressBar(serverListContainer, availableServerNumber=null, i=null){
+    
     var taskProgressBar = document.createElement('progress');
     taskProgressBar.setAttribute("class","task-progress-bar");
     taskProgressBar.setAttribute("id","task-progress-bar-"+i);
@@ -160,6 +184,9 @@ function addServer(firstime=false){
 
     }
     if(addedServerID == "10"){
+        alert("ERROR! You cannot add more than 10 servers");
+
+
         document.querySelector('.add-server-btn').disabled = true
         document.querySelector('.add-server-btn').className+=" disabled"; 
     }
@@ -252,7 +279,7 @@ function createTask(serverListContainer, noOfTasks, addedServerID){
 
             }
             else{
-                //debugger
+                
                 //No server available, add tasks to queue
                 //Task container (for bar and delete button)
                 var taskContainer = document.createElement('div');
@@ -268,14 +295,22 @@ function createTask(serverListContainer, noOfTasks, addedServerID){
 
                 //Delete button
                 var deleteTaskBtn = document.createElement('button');
+                deleteTaskBtn.setAttribute("class","delete-task-btn");
                 deleteTaskBtn.setAttribute("id","delete-btn-"+i);
-                deleteTaskBtn.innerHTML = "DEL";
                 deleteTaskBtn.setAttribute("onclick", "deleteTask("+i+");");
+
+                //Delete icon
+                var deleteIcon = document.createElement("img");
+                deleteIcon.setAttribute("src","./assets/icons/delete.svg");
+                deleteIcon.setAttribute("class","delete");
+
+                deleteTaskBtn.appendChild(deleteIcon);
 
                 var taskListContainer = document.querySelector('.task-list-container');
                 taskContainer.appendChild(taskProgressBar);
                 taskContainer.appendChild(deleteTaskBtn);
                 taskListContainer.appendChild(taskContainer);
+                
             
 
             }
@@ -283,7 +318,8 @@ function createTask(serverListContainer, noOfTasks, addedServerID){
         }
     }
     else{
-        alert("can't have more than 99 pending tasks");
+        debugger;
+        alert("ERROR! You cannot have more than 99 pending tasks");
     }
     
 
