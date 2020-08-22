@@ -1,141 +1,149 @@
-var serverStatusList = {
+/**
+ * Parent file that handles server and task management
+ */
+
+//Global config and tracking variables
+let serverStatusList = {
 }
 const TASK_DURATION = 3000;
 const MAX_SERVERS = 10;
 const ALERT_DURATION = 5000;
-var taskQueue = [];
-var pendingTasks = 0;
-var serversToRemove = 0;
+let pendingTasks = 0;
+let serversToRemove = 0;
 
 
+/**
+ * 
+ * Alert function for warning popups
+ * @param {String} message 
+ */
 function alert(message){
 
-    var alert = document.createElement('div');
-    var existingAlert = document.querySelector('.alert-error');
-    var cardTitle = document.querySelector('.card-title');
+    //Create element and add to DOM
+    let alert = document.createElement('div');
+    let existingAlert = document.querySelector('.alert-error');
+    let cardTitle = document.querySelector('.card-title');
     alert.setAttribute("class","alert-error");
-    var alertText = document.createElement('span');
+    let alertText = document.createElement('span');
     alertText.innerHTML = "<strong>"+message+"</strong>";
     alert.appendChild(alertText);
+
+    //If a previous alert exists, add the new alert as a sibling; else add as a sibling to card title
     if(!existingAlert){
         cardTitle.parentNode.insertBefore(alert, cardTitle.nextSibling);
     }
     else{
         existingAlert.parentNode.insertBefore(alert, existingAlert.nextSibling);
     }
-    
-    
-   
+
+    //Alert to dissappear after ALERT_DURATION seconds
     setTimeout(function(){
         alert.parentElement.removeChild(alert);
     },ALERT_DURATION);
 }
-//Checks server status - returns first available server
+
+/**
+ * Checks first server availability
+ * @returns {Number} - first available server or -1 if no server is available
+ */
 function checkServerAvailability(){
-    var serverIsAvailable = false;
-    var availableServerID = '';
+    let serverIsAvailable = false;
+    let availableServerID = '';
+
     //Traverse through server list and return next available server
     for (const [serverNumber, status] of Object.entries(serverStatusList)) {
-        //debugger;
         if(!status) {
-            console.log('First available server - '+serverNumber);
             serverIsAvailable = true;
             availableServerID = serverNumber;
             return parseInt(availableServerID,10);
             
         }
-        // else if(status){
-        //     console.log('Next available server - '+parseInt(parseInt(serverNumber,10)+parseInt(1,10),10));
-        //     return parseInt(serverNumber,10)+parseInt(1,10);
-        // }
         else{
             serverIsAvailable = false;
         }
     }
 
-    return (serverIsAvailable)? parseInt(availableServerID,10):"unavailable";
+    //If a server is available, return its ID, else return -1
+    return (serverIsAvailable)? parseInt(availableServerID,10):-1;
     
 }
 
+/**
+ * 
+ * Creates task and assigns to available server
+ * @param {Object} serverListContainer 
+ * @param {Number} availableServerNumber 
+ * @param {Number} i 
+ */
 function createTaskProgressBar(serverListContainer, availableServerNumber=null, i=null){
     
-    var taskProgressBar = document.createElement('progress');
+
+    //Add task to DOM
+    let taskProgressBar = document.createElement('progress');
     taskProgressBar.setAttribute("class","task-progress-bar");
     taskProgressBar.setAttribute("id","task-progress-bar-"+i);
     taskProgressBar.setAttribute("max",TASK_DURATION);
     taskProgressBar.setAttribute("value","0");
-    
-   
-
-    
     serverListContainer.querySelector('#server-'+availableServerNumber).appendChild(taskProgressBar);
+
     toggleServer(availableServerNumber, true);
 
-    //Allocate task only if server is available
+    //Initialise progress bar
     let progressBarValue = 0;
-    var taskProgressBarIntervalID = setInterval(function(){
-        //console.log(progressBarValue);
-        
-        //debugger;
+    let taskProgressBarIntervalID = setInterval(function(){
         taskProgressBar.setAttribute("value",progressBarValue);
         progressBarValue+=1000;
-
-        //debugger;
+        //Check if progress bar has completed
         if(progressBarValue >= TASK_DURATION){
-            taskProgressBar.setAttribute("value",TASK_DURATION);
-                    
+            taskProgressBar.setAttribute("value",TASK_DURATION);        
             clearInterval(taskProgressBarIntervalID);
-            toggleServer(availableServerNumber, false);
-            console.log('Pending tasks'+pendingTasks);
+
             setTimeout(function(){
 
                 taskProgressBar.parentNode.removeChild(taskProgressBar);
-                document.querySelector('.task-counter div').innerHTML = pendingTasks;
-               
+                toggleServer(availableServerNumber, false); 
+                document.querySelector('.task .task-counter').innerHTML = "("+pendingTasks+" pending tasks)";
+                
+                //If remove a server has been clicked, remove servers after they become idle
                 if(serversToRemove>0){
                     for(let i=1;i<=serversToRemove;i++, serversToRemove--){
                         
-                        var serverBoxToRemove = serverListContainer.lastElementChild;
-                        var serverIDToRemove = serverListContainer.lastElementChild.id.substr(-1);
-                        delete serverStatusList[serverIDToRemove];
-                        serverBoxToRemove.parentNode.removeChild(serverBoxToRemove);
-                    }
-                }
-                if(pendingTasks==0){
-                    //Always keep 1 server active - delete 2 to N servers
-                    // var serverBox = serverListContainer.firstElementChild.nextElementSibling;
-                
-                
-                    // if(serverBox) {
-                    //     var serverToRemove = serverBox.id.substr(-1);
-                    //     serverBox.parentNode.removeChild(serverBox);
-                    //     delete serverStatusList[serverToRemove];
-                    //     console.log(serverStatusList);
+                        let serverBoxToRemove = serverListContainer.lastElementChild;
+                        let serverIDToRemove = serverListContainer.lastElementChild.id.substr(-1);
 
-                    // }
-                    
-                }
-                else{
-                    //debugger;
-                    availableServerNumber = checkServerAvailability();
-                    if(Number.isInteger(availableServerNumber)){
-                        runPendingTasks(availableServerNumber);
+                        if(serverIDToRemove != 1){
+                            serverBoxToRemove.parentNode.removeChild(serverBoxToRemove);
+                            delete serverStatusList[serverIDToRemove];
+                        }
+                        else{
+                            document.querySelector('.remove-server-btn').disabled = true  
+                            document.querySelector('.remove-server-btn').className+=" disabled";
+                        }
+                       
                     }
-                    
                 }
-                //console.log(serverStatusList);
+                //If pending tasks exist, run them
+                if(pendingTasks != 0){
+                    availableServerNumber = checkServerAvailability();
+                    if(availableServerNumber>=1){
+                        runPendingTasks(availableServerNumber);
+                    }   
+                }
             },2000);
     
         }
     },1000)
 }
 
-//Creates individual server boxes
+/**
+ * Creates server box and adds to DOM
+ * @param {Number} currentServerID 
+ */
 function createServerBox(currentServerID){
-    var serverListContainer = document.querySelector('.server-list-container');
-    var newServerBox = document.createElement('div');
-    var serverNumber = document.createElement('span');
-    var newServerBoxInner = document.createElement('div');
+    let serverListContainer = document.querySelector('.server-list-container');
+    let newServerBox = document.createElement('div');
+    let serverNumber = document.createElement('span');
+    let newServerBoxInner = document.createElement('div');
     serverNumber.innerHTML = currentServerID;
     newServerBoxInner.setAttribute("class","server-box");
 
@@ -149,32 +157,71 @@ function createServerBox(currentServerID){
 }
 
 
+/**
+ * If pending tasks exist, allocate them to a server and run them
+ * @param {Number} addedServerID 
+ */
 function runPendingTasks(addedServerID){
-    var serverListContainer = document.querySelector('.server-list-container');
-    var taskListContainer = document.querySelector('.task-list-container');
+    let serverListContainer = document.querySelector('.server-list-container');
+    let taskListContainer = document.querySelector('.task-list-container');
     if(pendingTasks>0){
-        var lastTask = taskListContainer.lastElementChild;
-        //debugger;
-        console.log('Checking pending tasks -'+pendingTasks);
+        let lastTask = taskListContainer.lastElementChild;
         createTaskProgressBar(serverListContainer, addedServerID);
         pendingTasks--;
+        document.querySelector('.task .task-counter').innerHTML = "("+pendingTasks+" pending tasks)";
         taskListContainer.removeChild(lastTask);
 
     }
 }
 
-//Adds server to DOM
-function addServer(firstime=false){
-    //Get most recent server
-    //var addedServerID = '';
-    console.log(Object.keys(serverStatusList));
-    console.log(serverStatusList);
-    //addedServerID = (firstime)?Object.keys(serverStatusList).length+1:Object.keys(serverStatusList).length;
-    var addedServerID = Object.keys(serverStatusList).length+1;
-    console.log('Added server ID '+addedServerID);
 
+function modifyActiveServerDOM(addServer = false, removeServer = false, addTask = false, finishedTask = false){
+
+    [stats] = getServerStats(addServer, removeServer, addTask, finishedTask);
+    let taskCounterDiv = document.querySelector('.server .task-counter');
+    if(taskCounterDiv){
+        taskCounterDiv.innerHTML = "("+stats.active+"/"+stats.total+" active servers)";
+    }
+    else{
+        let newTaskCounterDiv = document.createElement('h2');
+        newTaskCounterDiv.setAttribute("class","task-counter");
+        newTaskCounterDiv.innerHTML = "("+stats.active+"/"+stats.total+" active servers)";
+        document.querySelector('.server .card-subtitle').appendChild(newTaskCounterDiv);
+    }
+}
+
+function getServerStats(addServer = false, removeServer = false, addTask = false, finishedTask = false){
+    
+    let totalServerCount = 0;
+    // let totalServerCount = (firstime)?Object.keys(serverStatusList).length+1:Object.keys(serverStatusList).length;
+    if(addServer){
+        totalServerCount = Object.keys(serverStatusList).length+1;
+    }
+    else if(removeServer || addTask || finishedTask){
+        totalServerCount = Object.keys(serverStatusList).length;
+    }
+    
+    let activeServerCount = 0;
+    for (const [serverNumber, status] of Object.entries(serverStatusList)) {
+        if(status){
+            activeServerCount++;
+        }
+    }
+    return([{"total":totalServerCount, "active":activeServerCount}]);
+}
+
+/**
+ * Server initialisation function
+ * @param {Boolean} firstime 
+ */
+function addServer(firstime=false){
+    
+    let addedServerID = Object.keys(serverStatusList).length+1;
+
+    //If function is being called for the first time, disable remove a server button, as there needs to be a minimum of 1 server
     (firstime)?document.querySelector('.remove-server-btn').disabled = true:document.querySelector('.remove-server-btn').disabled = false;
     (firstime)?document.querySelector('.remove-server-btn').className+=" disabled":document.querySelector('.remove-server-btn').classList.remove("disabled");
+
 
     //A maximum of 10 servers can be added
     if(addedServerID<=MAX_SERVERS){
@@ -184,23 +231,25 @@ function addServer(firstime=false){
         
 
     }
+    //Trigger alert popup and disable add a server button if more than 10 servers are added
     if(addedServerID == "10"){
-        alert("ERROR! You cannot add more than 10 servers");
-
-
+        alert("You cannot add more than 10 servers");
         document.querySelector('.add-server-btn').disabled = true
         document.querySelector('.add-server-btn').className+=" disabled"; 
     }
 
 }
 
+/**
+ * Removes a server if it is idle
+ */
 function removeServer(){
-    var serverListContainer = document.querySelector('.server-list-container');
-    var lastServerBox = serverListContainer.lastElementChild;
-    var serverIsBusy = (lastServerBox.childNodes.length == 2)?true:false;
-    var lastServerID = serverListContainer.lastElementChild.id.substr(-1);
+    let serverListContainer = document.querySelector('.server-list-container');
+    let lastServerBox = serverListContainer.lastElementChild;
+    let serverIsBusy = (lastServerBox.childNodes.length == 2)?true:false;
+    let lastServerID = serverListContainer.lastElementChild.id.substr(-1);
     serversToRemove++;
-    //debugger;
+
     //Remove server if idle (do not remove if server to remove is #1)
     if(!serverIsBusy && lastServerID != "1"){
         document.querySelector('.add-server-btn').disabled = false;  
@@ -208,6 +257,7 @@ function removeServer(){
         lastServerBox.parentNode.removeChild(lastServerBox);
         delete serverStatusList[lastServerID];
     }
+    //If server ID is 2 or 1, disable remove a server button
     if(lastServerID == "2" || lastServerID == "1"){
         document.querySelector('.add-server-btn').disabled = false;  
         document.querySelector('.add-server-btn').classList.remove("disabled");
@@ -218,64 +268,66 @@ function removeServer(){
 
 }
 
-//Get status of given server number
+/**
+ * Returns status of given server ID
+ * @param {Number} serverNumber 
+ */
 function getServerStatus(serverNumber){
     return serverStatusList[serverNumber];
 }
 
-//Print of all servers
-function displayServerStatusList(){
-    for (const [serverNumber, status] of Object.entries(serverStatusList)) {
-        //console.log(`${serverNumber}: ${status}`);
-    }
-}
 
-function getFromQueue(element){
-    var fetchedElement = '';
-    for(let i=0;i<taskQueue.length;i++){
-        if(taskQueue[i] === element){
-            fetchedElement = element;
-        }
-    }
-    return fetchedElement;
-}
-
-//Toggles server based on status
+/**
+ * 
+ * Toggles server to given status
+ * @param {Number} serverNumber 
+ * @param {Boolean} status 
+ */
 function toggleServer(serverNumber, status){
     serverStatusList[serverNumber] = status;
 }
 
-
+/**
+ * Deletes task if it is still pending i.e still in the pending queue.
+ * @param {Number} task 
+ */
 function deleteTask(task){
-    var taskProgressBar = document.querySelector('#task-progress-bar-'+task);
-    var taskListContainer = document.querySelector('.task-list-container');
+    let taskProgressBar = document.querySelector('#task-progress-bar-'+task);
+    let taskListContainer = document.querySelector('.task-list-container');
     if(taskProgressBar.parentNode.parentNode.isSameNode(taskListContainer)){
-        var taskToRemove = document.querySelector('#task-'+task)
+        let taskToRemove = document.querySelector('#task-'+task)
         taskProgressBar.parentNode.parentNode.removeChild(taskToRemove);
     }
 }
 
-//Creates task progress bar
+/**
+ * 
+ * Task initialisation function
+ * @param {Object} serverListContainer 
+ * @param {Number} noOfTasks 
+ * @param {Number} addedServerID 
+ */
 function createTask(serverListContainer, noOfTasks, addedServerID){
     
     pendingTasks += parseInt(noOfTasks,10);
     if(pendingTasks <= 99){
-        var taskCounterDiv = document.querySelector('.task-counter div');
-        taskCounterDiv.innerHTML = pendingTasks;
-        console.log('Created task --- now pending'+pendingTasks);
         for(let i=1;i<=noOfTasks;i++){  
-            //debugger;
-       
-            //Server availability check
-            //debugger;
-            var availableServerNumber = checkServerAvailability();
-            //debugger;
-        
-            if(Number.isInteger(availableServerNumber)){
-            
-                //debugger;
+            let availableServerNumber = checkServerAvailability();
+    
+            //if a server is available, allocate a task to it
+            if(availableServerNumber>=1){
                 pendingTasks--;
-                console.log('Server is available --- Pending taks '+pendingTasks);
+                let taskCounterDiv = document.querySelector('.task .task-counter');
+                if(taskCounterDiv){
+                    taskCounterDiv.innerHTML = "("+pendingTasks+" pending tasks)";
+                }
+                else{
+                    let newTaskCounterDiv = document.createElement('h2');
+                    newTaskCounterDiv.setAttribute("class","task-counter");
+                    newTaskCounterDiv.innerHTML = "("+pendingTasks+" pending tasks)";
+                    document.querySelector('.task .card-subtitle').appendChild(newTaskCounterDiv);
+                }
+        
                 createTaskProgressBar(serverListContainer, availableServerNumber, addedServerID, i);
             
             
@@ -284,32 +336,31 @@ function createTask(serverListContainer, noOfTasks, addedServerID){
             else{
                 
                 //No server available, add tasks to queue
-                //Task container (for bar and delete button)
-                var taskContainer = document.createElement('div');
+                let taskContainer = document.createElement('div');
                 taskContainer.setAttribute("class", "task-bar-container")
                 taskContainer.setAttribute("id", "task-"+i);
 
                 //Actual task progress bar
-                var taskProgressBar = document.createElement('progress');
+                let taskProgressBar = document.createElement('progress');
                 taskProgressBar.setAttribute("class","task-progress-bar");
                 taskProgressBar.setAttribute("id","task-progress-bar-"+i);
                 taskProgressBar.setAttribute("max",TASK_DURATION);
                 taskProgressBar.setAttribute("value","0");
 
                 //Delete button
-                var deleteTaskBtn = document.createElement('button');
+                let deleteTaskBtn = document.createElement('button');
                 deleteTaskBtn.setAttribute("class","delete-task-btn");
                 deleteTaskBtn.setAttribute("id","delete-btn-"+i);
                 deleteTaskBtn.setAttribute("onclick", "deleteTask("+i+");");
 
                 //Delete icon
-                var deleteIcon = document.createElement("img");
+                let deleteIcon = document.createElement("img");
                 deleteIcon.setAttribute("src","./assets/icons/delete.svg");
                 deleteIcon.setAttribute("class","delete");
 
                 deleteTaskBtn.appendChild(deleteIcon);
 
-                var taskListContainer = document.querySelector('.task-list-container');
+                let taskListContainer = document.querySelector('.task-list-container');
                 taskContainer.appendChild(taskProgressBar);
                 taskContainer.appendChild(deleteTaskBtn);
                 taskListContainer.appendChild(taskContainer);
@@ -320,8 +371,9 @@ function createTask(serverListContainer, noOfTasks, addedServerID){
    
         }
     }
+    //Cannot have more than 99 pending tasks (added constraint from developer's end to avoid excessive clutter and overload)
     else{
-        alert("ERROR! You cannot have more than 99 pending tasks");
+        alert("You cannot have more than 99 pending tasks.");
     }
     
 
@@ -330,15 +382,18 @@ function createTask(serverListContainer, noOfTasks, addedServerID){
 }
 
 
-//Adds task to DOM
+/**
+ * Task initialisation function linked to input field on frontend
+ */
 function addTask(){
-    var addedServerID = Object.keys(serverStatusList).length;
-    var noOfTasks = document.getElementById('task-input').value;
-    var serverListContainer = document.querySelector('.server-list-container');
+    let addedServerID = Object.keys(serverStatusList).length;
+    let noOfTasks = document.getElementById('task-input').value;
+    let serverListContainer = document.querySelector('.server-list-container');
     createTask(serverListContainer, noOfTasks, addedServerID);
     
 }
 
+//1 server is always present
 addServer(true);
 
 

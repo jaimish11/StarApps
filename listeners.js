@@ -1,26 +1,30 @@
+/**
+ * Supplementary file that validates task inputs
+ */
+
+ 
 //Disable add task button for tasks > 99
 var taskInput = document.getElementById('task-input');
 var addTaskBtn = document.querySelector('.add-task-btn');
-if (taskInput.value > 99 || taskInput.value == ""){
+
+//If unwanted value is in input field on page reload
+if (taskInput.value > 99 || taskInput.value == "" || taskInput.value < 1){
     addTaskBtn.disabled = true;
     addTaskBtn.className+=" disabled";
 }
+
+//Dynamic button toggling based on entered value
 taskInput.addEventListener('keyup',function(){
-    console.log(taskInput.value);
-    console.log(taskInput.value>99);
-    if(taskInput.value==""){
-        console.log('Value null');
+    if(taskInput.value=="" || taskInput.value < 1 ){
         addTaskBtn.disabled = true;
         addTaskBtn.className+=" disabled"
     }
     else if(taskInput.value != "" && taskInput.value <= 99){
-        console.log('Value less than 99');
         addTaskBtn.disabled = false;
         addTaskBtn.classList.remove("disabled");
 
     }
     else if(taskInput.value != "" && taskInput.value > 99){
-        console.log('Value more than 99');
         addTaskBtn.disabled = true;
         addTaskBtn.className+=" disabled";
     }
