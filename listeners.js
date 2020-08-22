@@ -17,6 +17,7 @@ taskInput.addEventListener('keyup',function(){
         console.log('Value less than 99');
         addTaskBtn.disabled = false;
         addTaskBtn.classList.remove("disabled");
+
     }
     else if(taskInput.value != "" && taskInput.value > 99){
         console.log('Value more than 99');

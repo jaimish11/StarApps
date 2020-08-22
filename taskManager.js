@@ -90,6 +90,7 @@ function createTaskProgressBar(serverListContainer, availableServerNumber=null, 
             setTimeout(function(){
 
                 taskProgressBar.parentNode.removeChild(taskProgressBar);
+                document.querySelector('.task-counter div').innerHTML = pendingTasks;
                
                 if(serversToRemove>0){
                     for(let i=1;i<=serversToRemove;i++, serversToRemove--){
@@ -259,6 +260,8 @@ function createTask(serverListContainer, noOfTasks, addedServerID){
     
     pendingTasks += parseInt(noOfTasks,10);
     if(pendingTasks <= 99){
+        var taskCounterDiv = document.querySelector('.task-counter div');
+        taskCounterDiv.innerHTML = pendingTasks;
         console.log('Created task --- now pending'+pendingTasks);
         for(let i=1;i<=noOfTasks;i++){  
             //debugger;
@@ -318,7 +321,6 @@ function createTask(serverListContainer, noOfTasks, addedServerID){
         }
     }
     else{
-        debugger;
         alert("ERROR! You cannot have more than 99 pending tasks");
     }
     

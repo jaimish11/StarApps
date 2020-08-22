@@ -1,8 +1,11 @@
 <html>
 <head>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap" rel="stylesheet"> 
     <style>
         /*General Styles*/
+        h1, h2{
+            font-family: 'Roboto Mono', monospace;
+        }
         h1{
             margin:0px;
         }
@@ -26,8 +29,13 @@
                 align-items: center;
                 justify-content: center;
             }
+            .desktop-container{
+                width: 80vw;
+                height: 80vh;
+            }
            
         }
+        
         .card{
             background-color: #f1f1f1;
             padding:5vw;
@@ -35,22 +43,33 @@
             border-radius: 4px;
            
         }
+        @media (min-width: 769px){
+            .card{
+                margin:2vw;
+                padding:2vw;
+                flex:1 1 0px;
+            }
+            .card-container{
+                display: flex;
+            } 
+        }
+        @media (max-width: 769px){
+            .card-title{
+                padding:0vw 5vw;
+                padding-top: 5vw;
+            }
+        }
+        .card-subtitle h2{
+            border-bottom: 5px solid purple;
+            width: min-content;
+        }
         .material-card-outlined{
             box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.2),0px 0px 0px 0px rgba(0, 0, 0, 0.14),0px 0px 0px 0px rgba(0,0,0,.12);
             border-width: 1px;
             border-style: solid;
             border-color: #e0e0e0;
         }
-        @media (min-width:769px){
-            .card{
-                width:60%;
-                height:60%;
-                background-color: #f1f1f1;
-                padding:10vw;
-           
-            }
-        }
-        
+
         .card-content{
             display: flex;
             flex-direction: column;
@@ -96,6 +115,8 @@
             flex-direction: column;
             justify-content: flex-start;
             justify-content: start;
+            max-height: 50vh;
+            overflow-y: scroll;
         }
         @media (max-width:769px){
             .task-list-container{
@@ -131,11 +152,25 @@
             padding-bottom: 5vw;
             justify-content: space-between;
         }
+       
         .task-counter{
             width:20vw;
             height: 15vw;
             border:1px solid lightgrey;
             display: flex;
+        }
+        @media(min-width: 769px){
+            .task-control{
+                padding-bottom: 2vw;
+                justify-content: start;
+                justify-content: flex-start;
+            }
+            .task-counter{
+                width: 5vw;
+                height:3vw;
+                margin-left: 2vw;
+            }
+            
         }
         .task-progress-bar{
             width:100%;
@@ -179,7 +214,6 @@
             font-size: 1rem;
             color: #fff;
             text-align: center;
-            padding: 1.2rem 2rem;
             border-radius: 4px;
             -moz-user-select: -moz-none;
             -ms-user-select: none;
@@ -222,6 +256,11 @@
             padding-bottom: 5vw;
             display: flex;
         }
+        @media (min-width:769px){
+            .button-container{
+                padding-bottom: 2vw;
+            }
+        }
         .delete-task-btn{
             padding: 0;
             width: 32px;
@@ -236,6 +275,21 @@
         }
         .remove-server-btn{
             margin-left: 5vw;
+        }
+        @media (min-width: 769px){
+            .remove-server-btn{
+                margin-left: 2vw;
+            }
+            .add-task-btn{
+                margin-left: 2vw;
+            }
+            .delete-task-btn{
+                margin-left: 2vw;
+            }
+            .btn{
+                width: 10vw;
+                height:3vw;
+            }
         }
 
         /*Input field styles*/
@@ -252,6 +306,7 @@
         @media(min-width: 769px){
             input{
                 width:4vw;
+                height:3vw;
             }
         }
         
@@ -287,7 +342,15 @@
             padding:5vw;
             margin:5vw;
             background-color: #ffcccb;
-            color:darkred
+            color:darkred;
+            border:1px solid darkred;
+        }
+        @media (min-width: 769px){
+            .alert-error{
+                padding:2vw;
+                margin:1vw;
+                width:25vw;
+            }
         }
 
     </style>
@@ -297,54 +360,58 @@
 <body>
 
     <div class="container">
-        <div class="card-title"><h1>Task Manager</h1></div>
-        <div class="card material-card-outlined">
+        <div class="desktop-container">
+            <div class="card-title"><h1>Task Manager</h1></div>
+            <div class="card-container">
+                <div class="card material-card-outlined">
            
-            <div class="card-content">
+                    <div class="card-content">
                 
-                <div class="server">
-                    <div class="card-subtitle"><h2>Server</h2></div>
-                    <div class="button-container">
-                        <button class="add-server-btn btn material-btn purple" onclick="addServer();">Add a server</button>
-                        <button class="remove-server-btn btn material-btn purple" onclick="removeServer();">Remove a server</button>
-                    </div>
-                    <div class="server-list-container">
+                        <div class="server">
+                            <div class="card-subtitle"><h2>Server</h2></div>
+                            <div class="button-container">
+                                <button class="add-server-btn btn material-btn purple" onclick="addServer();">Add a server</button>
+                                <button class="remove-server-btn btn material-btn purple" onclick="removeServer();">Remove a server</button>
+                            </div>
+                            <div class="server-list-container">
 
-                    </div>
+                            </div>
 
-                </div>
-
-            </div>
-        </div>
-        <div class="card material-card-outlined">
-            <div class="card-content">
-                <div class="task">
-                    <div class="card-subtitle"><h2>Tasks</h2></div>
-                    <div class="task-control">
-                        <div class="input-group">
-                            <input id="task-input" type="number" value="1" max="99" required>
-                            <span class="highlight"></span>
-                            <span class="bar"></span>
-                            
                         </div>
-                        <button class="add-task-btn btn material-btn purple" onclick="addTask();" >Add Tasks</button>
-                        <div class="task-counter"><div style="margin:auto;"></div></div>
-                    </div>
-                    
-                    <div class="task-list-container">
-                       
-                       
+
                     </div>
                 </div>
+                <div class="card material-card-outlined">
+                    <div class="card-content">
+                        <div class="task">
+                            <div class="card-subtitle"><h2>Tasks</h2></div>
+                            <div class="task-control">
+                                <div class="input-group">
+                                    <input id="task-input" type="number" value="1" max="99" required>
+                            
+                                </div>
+                                <button class="add-task-btn btn material-btn purple" onclick="addTask();" >Add Tasks</button>
+                                <div class="task-counter"><div style="margin:auto;"></div></div>
+                            </div>
+                    
+                            <div class="task-list-container">
+                       
+                       
+                            </div>
+                        </div>
                 
                 
-            </div>
+                    </div>
            
 
             
             
             
+                </div>
+            </div>
+           
         </div>
+       
     </div>
    
     <script src="taskManager.js"></script>
