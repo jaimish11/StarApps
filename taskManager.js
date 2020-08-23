@@ -4,7 +4,7 @@
 
 //Global config and tracking variables
 let serverStatusList = {}
-const TASK_DURATION = 5000;
+const TASK_DURATION = 10000;
 const MAX_SERVERS = 10;
 const ALERT_DURATION = 5000;
 let pendingTasks = 0;
@@ -49,7 +49,7 @@ function checkServerAvailability() {
     let serverIsAvailable = false;
     let availableServerID = -1;
 
-    //Traverse through server list and return next available server
+    //Traverse through server list and return first available server
     for (const [serverNumber, status] of Object.entries(serverStatusList)) {
         if (!status) {
             serverIsAvailable = true;
@@ -256,7 +256,7 @@ function removeServer() {
  * @param {Number} task 
  */
 function deleteTask(task) {
-    let taskProgressBar = document.querySelector('#task-progress-bar-' + task);
+    let taskProgressBar = document.querySelector('.task #task-progress-bar-' + task);
     let taskListContainer = document.querySelector('.task-list-container');
     if (taskProgressBar.parentNode.parentNode.isSameNode(taskListContainer)) {
         pendingTasks--;

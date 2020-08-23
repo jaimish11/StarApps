@@ -253,12 +253,17 @@ width:100%;
     border-radius: 5px;
     background-color: #fff;
 }
-    
+progress[value]{
+    -webkit-appearance: none;
+}
 progress[value]::-moz-progress-bar{
     background-color: #8F72B3;
         
 }
 progress[value]::-webkit-progress-bar{
+    background-color: #fff;
+}
+progress[value]::-webkit-progress-value{
     background-color: #8F72B3;
 }
     
@@ -344,12 +349,15 @@ input:focus{
 .alert-warning{
     margin-bottom: 2vw;
     color:Red;
+    font-size: 14px;
 }
 @media (min-width: 1024px){
     .alert-error{
         padding:2vw;
         margin:1vw;
         width:25vw;
+        font-size: 18px;
+
     }
 }
 
