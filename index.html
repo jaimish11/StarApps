@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>SA - Task Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/styles/styles.css" type="text/css">
+</head>
+
+
+<body>
+
+    <div class="container">
+        <div class="desktop-container">
+            <div class="card-title">
+                <h1>Task Manager</h1>
+            </div>
+            <div class="card-container">
+                <div class="card material-card-outlined">
+
+                    <div class="card-content">
+
+                        <div class="server">
+                            <div class="card-subtitle">
+                                <h2>Server</h2>
+                            </div>
+                            <div class="button-container">
+                                <button class="add-server-btn btn material-btn purple" onclick="addServer();">Add a
+                                    server</button>
+                                <button class="remove-server-btn btn material-btn purple"
+                                    onclick="removeServer();">Remove a server</button>
+                            </div>
+                            <div class="server-list-container">
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                <div class="card material-card-outlined">
+                    <div class="card-content">
+                        <div class="task">
+                            <div class="card-subtitle">
+                                <h2>Tasks</h2>
+                                <h2 class="task-counter">(0 pending tasks)</h2>
+                            </div>
+
+                            <div class="task-control">
+                                <div class="input-group">
+                                    <input id="task-input" type="number" value="1" min="1" max="99" required>
+
+                                </div>
+                                <button class="add-task-btn btn material-btn purple" onclick="addTask();">Add
+                                    Tasks</button>
+
+                            </div>
+
+                            <div class="task-list-container">
+
+
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="taskManager.js"></script>
+    <script src="listeners.js"></script>
+</body>
+
+</html>
