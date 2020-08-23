@@ -48,7 +48,7 @@ function alert(message) {
  */
 function checkServerAvailability() {
     let serverIsAvailable = false;
-    let availableServerID = '';
+    let availableServerID = -1;
 
     //Traverse through server list and return next available server
     for (const [serverNumber, status] of Object.entries(serverStatusList)) {
@@ -58,15 +58,14 @@ function checkServerAvailability() {
             return parseInt(availableServerID, 10);
 
         }
-        else {
-            serverIsAvailable = false;
-        }
     }
 
     //If a server is available, return its ID, else return -1
     return (serverIsAvailable) ? parseInt(availableServerID, 10) : -1;
 
 }
+
+
 
 /**
  * 
@@ -84,6 +83,9 @@ function createTaskProgressBar(serverListContainer, availableServerNumber = null
     taskProgressBar.setAttribute("id", "task-progress-bar-" + i);
     taskProgressBar.setAttribute("max", TASK_DURATION);
     taskProgressBar.setAttribute("value", "0");
+    //debugger;
+
+    serverListContainer.querySelector('#server-' + availableServerNumber + " span").innerHTML = "Busy";
     serverListContainer.querySelector('#server-' + availableServerNumber).appendChild(taskProgressBar);
     document.querySelector('.task .task-counter').innerHTML = "(" + pendingTasks + " pending tasks)";
 
@@ -102,21 +104,34 @@ function createTaskProgressBar(serverListContainer, availableServerNumber = null
             setTimeout(function () {
 
                 taskProgressBar.parentNode.removeChild(taskProgressBar);
+
+                //debugger;
                 serverStatusList[availableServerNumber] = false;
+                serverListContainer.querySelector('#server-' + availableServerNumber + " span").innerHTML = "Idle";
 
                 //If remove a server has been clicked, remove servers after they become idle
                 if (serversToRemove > 0) {
 
                     for (let i = 1; i <= serversToRemove; i++, serversToRemove--) {
 
-                        let serverBoxToRemove = serverListContainer.lastElementChild;
-                        let serverIDToRemove = serverListContainer.lastElementChild.id.substr(-1);
+                        let serverToRemove = checkServerAvailability();
+                        debugger;
+                        // let serverBoxToRemove = serverListContainer.lastElementChild;
+                        // let serverIDToRemove = serverListContainer.lastElementChild.id.substr(-1);
+
+                        let serverBoxToRemove = serverListContainer.querySelector('#server-'+serverToRemove);
 
                         //debugger;
-                        if (serverIDToRemove != 1) {
+                        
+                        if(Object.keys(serverStatusList).length>1){
+                            
                             serverBoxToRemove.parentNode.removeChild(serverBoxToRemove);
-                            delete serverStatusList[serverIDToRemove];
+                            delete serverStatusList[serverToRemove];
                         }
+                        // if (serverIDToRemove != 1) {
+                        //     serverBoxToRemove.parentNode.removeChild(serverBoxToRemove);
+                        //     delete serverStatusList[serverIDToRemove];
+                        // }
                         else {
                             document.querySelector('.remove-server-btn').disabled = true
                             document.querySelector('.remove-server-btn').className += " disabled";
@@ -130,7 +145,7 @@ function createTaskProgressBar(serverListContainer, availableServerNumber = null
                 if (pendingTasks != 0) {
                     availableServerNumber = checkServerAvailability();
 
-                    if (availableServerNumber >= 1) {
+                    if (availableServerNumber > 0) {
                         //debugger;
                         runPendingTasks(availableServerNumber);
                     }
@@ -153,7 +168,7 @@ function createServerBox(currentServerID) {
     let newServerBox = document.createElement('div');
     let serverNumber = document.createElement('span');
     let newServerBoxInner = document.createElement('div');
-    serverNumber.innerHTML = currentServerID;
+    serverNumber.innerHTML = 'Idle';
     newServerBoxInner.setAttribute("class", "server-box");
 
     newServerBox.setAttribute("class", "server-box-container");
@@ -243,7 +258,7 @@ function addServer(firstime = false) {
 
     }
     //Trigger alert popup and disable add a server button if more than 10 servers are added
-    if (addedServerID == "10") {
+    if (addedServerID == MAX_SERVERS) {
         alert("You cannot add more than 10 servers");
         document.querySelector('.add-server-btn').disabled = true
         document.querySelector('.add-server-btn').className += " disabled";
@@ -262,20 +277,20 @@ function removeServer() {
     serversToRemove++;
 
     //Remove server if idle (do not remove if server to remove is #1)
-    if (!serverIsBusy && lastServerID != "1") {
+    if (!serverIsBusy && Object.keys(serverStatusList).length > 1) {
         document.querySelector('.add-server-btn').disabled = false;
         document.querySelector('.add-server-btn').classList.remove("disabled");
         lastServerBox.parentNode.removeChild(lastServerBox);
 
         delete serverStatusList[lastServerID];
     }
-    //If server ID is 2 or 1, disable remove a server button
-    if (lastServerID == "2" || lastServerID == "1") {
-        document.querySelector('.add-server-btn').disabled = false;
-        document.querySelector('.add-server-btn').classList.remove("disabled");
-        document.querySelector('.remove-server-btn').disabled = true
-        document.querySelector('.remove-server-btn').className += " disabled";
-    }
+    // //If server ID is 2 or 1, disable remove a server button
+    // if (lastServerID == "2" || lastServerID == "1") {
+    //     document.querySelector('.add-server-btn').disabled = false;
+    //     document.querySelector('.add-server-btn').classList.remove("disabled");
+    //     document.querySelector('.remove-server-btn').disabled = true
+    //     document.querySelector('.remove-server-btn').className += " disabled";
+    // }
 
 
 }
@@ -307,8 +322,10 @@ function deleteTask(task) {
     let taskProgressBar = document.querySelector('#task-progress-bar-' + task);
     let taskListContainer = document.querySelector('.task-list-container');
     if (taskProgressBar.parentNode.parentNode.isSameNode(taskListContainer)) {
+        pendingTasks--;
         let taskToRemove = document.querySelector('#task-' + task)
         taskProgressBar.parentNode.parentNode.removeChild(taskToRemove);
+        document.querySelector('.task .task-counter').innerHTML = "(" + pendingTasks + " pending tasks)";
     }
 }
 
