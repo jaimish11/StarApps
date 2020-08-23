@@ -4,7 +4,7 @@
 
 //Global config and tracking variables
 let serverStatusList = {}
-const TASK_DURATION = 10000;
+const TASK_DURATION = 20000;
 const MAX_SERVERS = 10;
 const ALERT_DURATION = 5000;
 let pendingTasks = 0;
