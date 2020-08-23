@@ -85,6 +85,7 @@ function createTaskProgressBar(serverListContainer, availableServerNumber = null
     taskProgressBar.setAttribute("max", TASK_DURATION);
     taskProgressBar.setAttribute("value", "0");
     serverListContainer.querySelector('#server-' + availableServerNumber).appendChild(taskProgressBar);
+    document.querySelector('.task .task-counter').innerHTML = "(" + pendingTasks + " pending tasks)";
 
     serverStatusList[availableServerNumber] = true;
 
@@ -123,7 +124,7 @@ function createTaskProgressBar(serverListContainer, availableServerNumber = null
 
                     }
                 }
-                document.querySelector('.task .task-counter').innerHTML = "(" + pendingTasks + " pending tasks)";
+                
 
                 //If pending tasks exist, run them
                 if (pendingTasks != 0) {
@@ -321,6 +322,13 @@ function deleteTask(task) {
 function createTask(serverListContainer, noOfTasks, addedServerID) {
 
     pendingTasks += parseInt(noOfTasks, 10);
+    if(pendingTasks>99){
+
+        //Cannot have more than 99 pending tasks (added constraint from developer's end to avoid excessive clutter and overload)
+        //Update pending tasks to always be <= 99
+        pendingTasks = pendingTasks - (pendingTasks-99);
+        alert("You cannot have more than 99 pending tasks.");
+    }
     if (pendingTasks <= 99) {
         for (let i = 1; i <= noOfTasks; i++) {
             let availableServerNumber = checkServerAvailability();
@@ -345,6 +353,8 @@ function createTask(serverListContainer, noOfTasks, addedServerID) {
 
             }
             else {
+
+                document.querySelector('.task .task-counter').innerHTML = "(" + pendingTasks + " pending tasks)";
 
                 //No server available, add tasks to queue
                 let taskContainer = document.createElement('div');
@@ -382,10 +392,7 @@ function createTask(serverListContainer, noOfTasks, addedServerID) {
 
         }
     }
-    //Cannot have more than 99 pending tasks (added constraint from developer's end to avoid excessive clutter and overload)
-    else {
-        alert("You cannot have more than 99 pending tasks.");
-    }
+    
 
 
 

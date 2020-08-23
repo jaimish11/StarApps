@@ -340,6 +340,10 @@ input:focus{
     color:darkred;
     border:1px solid darkred;
 }
+.alert-warning{
+    margin-bottom: 2vw;
+    color:Red;
+}
 @media (min-width: 1024px){
     .alert-error{
         padding:2vw;
