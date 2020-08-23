@@ -176,7 +176,6 @@ function createServerBox(currentServerID) {
  * @param {Number} addedServerID 
  */
 function runPendingTasks(addedServerID) {
-
     let serverListContainer = document.querySelector('.server-list-container');
     let taskListContainer = document.querySelector('.task-list-container');
     if (pendingTasks > 0) {
@@ -196,8 +195,13 @@ function runPendingTasks(addedServerID) {
  */
 function addServer(firstime = false) {
 
-    let addedServerID = Object.keys(serverStatusList).length + 1;
-
+    let numberOfServers = Object.keys(serverStatusList).length;
+    let addedServerID = '';
+    if(firstime)    addedServerID = numberOfServers + 1;
+    else{
+        addedServerID = parseInt(Object.keys(serverStatusList)[numberOfServers-1],10)+1;
+    }
+    
     //If function is being called for the first time, disable remove a server button, as there needs to be a minimum of 1 server
     (firstime) ? document.querySelector('.remove-server-btn').disabled = true : document.querySelector('.remove-server-btn').disabled = false;
     (firstime) ? document.querySelector('.remove-server-btn').className += " disabled" : document.querySelector('.remove-server-btn').classList.remove("disabled");
@@ -209,7 +213,6 @@ function addServer(firstime = false) {
         if(addedServerID>0){
             serverStatusList[addedServerID] = false;
         }
-        
         runPendingTasks(addedServerID);
     }
 
