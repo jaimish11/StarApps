@@ -3,9 +3,8 @@
  */
 
 //Global config and tracking variables
-let serverStatusList = {
-}
-const TASK_DURATION = 3000;
+let serverStatusList = {}
+const TASK_DURATION = 5000;
 const MAX_SERVERS = 10;
 const ALERT_DURATION = 5000;
 let pendingTasks = 0;
@@ -76,26 +75,31 @@ function checkServerAvailability() {
  */
 function createTaskProgressBar(serverListContainer, availableServerNumber = null, i = null) {
 
-
     //Add task to DOM
     let taskProgressBar = document.createElement('progress');
     taskProgressBar.setAttribute("class", "task-progress-bar");
-    taskProgressBar.setAttribute("id", "task-progress-bar-" + i);
+    if(createTaskProgressBar.caller.name == "runPendingTasks"){
+        taskProgressBar.setAttribute("id", "task-progress-bar-" + availableServerNumber);
+    }else{
+        taskProgressBar.setAttribute("id", "task-progress-bar-" + i);
+    }
+    
     taskProgressBar.setAttribute("max", TASK_DURATION);
     taskProgressBar.setAttribute("value", "0");
-    //debugger;
 
     serverListContainer.querySelector('#server-' + availableServerNumber + " span").innerHTML = "Busy";
     serverListContainer.querySelector('#server-' + availableServerNumber).appendChild(taskProgressBar);
     document.querySelector('.task .task-counter').innerHTML = "(" + pendingTasks + " pending tasks)";
 
-    serverStatusList[availableServerNumber] = true;
+    if(availableServerNumber > 0)   serverStatusList[availableServerNumber] = true;
+    
 
     //Initialise progress bar
     let progressBarValue = 0;
     let taskProgressBarIntervalID = setInterval(function () {
         taskProgressBar.setAttribute("value", progressBarValue);
         progressBarValue += 1000;
+
         //Check if progress bar has completed
         if (progressBarValue >= TASK_DURATION) {
             taskProgressBar.setAttribute("value", TASK_DURATION);
@@ -105,33 +109,23 @@ function createTaskProgressBar(serverListContainer, availableServerNumber = null
 
                 taskProgressBar.parentNode.removeChild(taskProgressBar);
 
-                //debugger;
-                serverStatusList[availableServerNumber] = false;
+                if(availableServerNumber > 0)   serverStatusList[availableServerNumber] = false;
+                
                 serverListContainer.querySelector('#server-' + availableServerNumber + " span").innerHTML = "Idle";
 
                 //If remove a server has been clicked, remove servers after they become idle
                 if (serversToRemove > 0) {
 
                     for (let i = 1; i <= serversToRemove; i++, serversToRemove--) {
-
                         let serverToRemove = checkServerAvailability();
-                        debugger;
-                        // let serverBoxToRemove = serverListContainer.lastElementChild;
-                        // let serverIDToRemove = serverListContainer.lastElementChild.id.substr(-1);
-
-                        let serverBoxToRemove = serverListContainer.querySelector('#server-'+serverToRemove);
-
-                        //debugger;
+                        let serverBoxToRemove = serverListContainer.querySelector('#server-' + serverToRemove);
                         
-                        if(Object.keys(serverStatusList).length>1){
-                            
+                        if (Object.keys(serverStatusList).length > 1) {
+
                             serverBoxToRemove.parentNode.removeChild(serverBoxToRemove);
-                            delete serverStatusList[serverToRemove];
+                            if(serverToRemove>0)    delete serverStatusList[serverToRemove];
+                            
                         }
-                        // if (serverIDToRemove != 1) {
-                        //     serverBoxToRemove.parentNode.removeChild(serverBoxToRemove);
-                        //     delete serverStatusList[serverIDToRemove];
-                        // }
                         else {
                             document.querySelector('.remove-server-btn').disabled = true
                             document.querySelector('.remove-server-btn').className += " disabled";
@@ -139,20 +133,16 @@ function createTaskProgressBar(serverListContainer, availableServerNumber = null
 
                     }
                 }
-                
+
 
                 //If pending tasks exist, run them
                 if (pendingTasks != 0) {
                     availableServerNumber = checkServerAvailability();
-
+                    
                     if (availableServerNumber > 0) {
-                        //debugger;
                         runPendingTasks(availableServerNumber);
                     }
                 }
-
-                
-
             }, 2000);
 
         }
@@ -200,41 +190,6 @@ function runPendingTasks(addedServerID) {
 }
 
 
-function modifyActiveServerDOM(addServer = false, removeServer = false, addTask = false, finishedTask = false) {
-
-    [stats] = getServerStats(addServer, removeServer, addTask, finishedTask);
-    let taskCounterDiv = document.querySelector('.server .task-counter');
-    if (taskCounterDiv) {
-        taskCounterDiv.innerHTML = "(" + stats.active + "/" + stats.total + " active servers)";
-    }
-    else {
-        let newTaskCounterDiv = document.createElement('h2');
-        newTaskCounterDiv.setAttribute("class", "task-counter");
-        newTaskCounterDiv.innerHTML = "(" + stats.active + "/" + stats.total + " active servers)";
-        document.querySelector('.server .card-subtitle').appendChild(newTaskCounterDiv);
-    }
-}
-
-function getServerStats(addServer = false, removeServer = false, addTask = false, finishedTask = false) {
-
-    let totalServerCount = 0;
-    // let totalServerCount = (firstime)?Object.keys(serverStatusList).length+1:Object.keys(serverStatusList).length;
-    if (addServer) {
-        totalServerCount = Object.keys(serverStatusList).length + 1;
-    }
-    else if (removeServer || addTask || finishedTask) {
-        totalServerCount = Object.keys(serverStatusList).length;
-    }
-
-    let activeServerCount = 0;
-    for (const [serverNumber, status] of Object.entries(serverStatusList)) {
-        if (status) {
-            activeServerCount++;
-        }
-    }
-    return ([{ "total": totalServerCount, "active": activeServerCount }]);
-}
-
 /**
  * Server initialisation function
  * @param {Boolean} firstime 
@@ -251,12 +206,13 @@ function addServer(firstime = false) {
     //A maximum of 10 servers can be added
     if (addedServerID <= MAX_SERVERS) {
         createServerBox(addedServerID);
-        serverStatusList[addedServerID] = false;
-        //debugger;
+        if(addedServerID>0){
+            serverStatusList[addedServerID] = false;
+        }
+        
         runPendingTasks(addedServerID);
-
-
     }
+
     //Trigger alert popup and disable add a server button if more than 10 servers are added
     if (addedServerID == MAX_SERVERS) {
         alert("You cannot add more than 10 servers");
@@ -281,38 +237,16 @@ function removeServer() {
         document.querySelector('.add-server-btn').disabled = false;
         document.querySelector('.add-server-btn').classList.remove("disabled");
         lastServerBox.parentNode.removeChild(lastServerBox);
-
-        delete serverStatusList[lastServerID];
+        if(lastServerID > 0)    delete serverStatusList[lastServerID];
+        
     }
-    // //If server ID is 2 or 1, disable remove a server button
-    // if (lastServerID == "2" || lastServerID == "1") {
-    //     document.querySelector('.add-server-btn').disabled = false;
-    //     document.querySelector('.add-server-btn').classList.remove("disabled");
-    //     document.querySelector('.remove-server-btn').disabled = true
-    //     document.querySelector('.remove-server-btn').className += " disabled";
-    // }
-
+    if(lastServerID == "2"){
+        document.querySelector('.remove-server-btn').disabled = true;
+        document.querySelector('.remove-server-btn').classList.add("disabled");
+    }
 
 }
 
-/**
- * Returns status of given server ID
- * @param {Number} serverNumber 
- */
-function getServerStatus(serverNumber) {
-    return serverStatusList[serverNumber];
-}
-
-
-/**
- * 
- * Toggles server to given status
- * @param {Number} serverNumber 
- * @param {Boolean} status 
- */
-function toggleServer(serverNumber, status) {
-    serverStatusList[serverNumber] = status;
-}
 
 /**
  * Deletes task if it is still pending i.e still in the pending queue.
@@ -339,11 +273,11 @@ function deleteTask(task) {
 function createTask(serverListContainer, noOfTasks, addedServerID) {
 
     pendingTasks += parseInt(noOfTasks, 10);
-    if(pendingTasks>99){
+    if (pendingTasks > 99) {
 
         //Cannot have more than 99 pending tasks (added constraint from developer's end to avoid excessive clutter and overload)
         //Update pending tasks to always be <= 99
-        pendingTasks = pendingTasks - (pendingTasks-99);
+        pendingTasks = pendingTasks - (pendingTasks - 99);
         alert("You cannot have more than 99 pending tasks.");
     }
     if (pendingTasks <= 99) {
@@ -403,17 +337,10 @@ function createTask(serverListContainer, noOfTasks, addedServerID) {
                 taskContainer.appendChild(deleteTaskBtn);
                 taskListContainer.appendChild(taskContainer);
 
-
-
             }
 
         }
     }
-    
-
-
-
-
 }
 
 
