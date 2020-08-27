@@ -1,0 +1,23 @@
+{
+  "name": "StarApps",
+  "version": "1.0.0",
+  "description": "A frontend interface that can assign arbitrary tasks to servers",
+  "main": "listeners.js",
+  "scripts": {
+    "dev": "browser-sync start --server --files 'index.html', '*.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jaimish11/StarApps.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.26.12"
+  },
+  "bugs": {
+    "url": "https://github.com/jaimish11/StarApps/issues"
+  },
+  "homepage": "https://github.com/jaimish11/StarApps#readme"
+}

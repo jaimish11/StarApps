@@ -4,11 +4,12 @@
 
 //Global config and tracking variables
 let serverStatusList = {}
-const TASK_DURATION = 20000;
+const TASK_DURATION = 5000;
 const MAX_SERVERS = 10;
 const ALERT_DURATION = 5000;
 let pendingTasks = 0;
 let serversToRemove = 0;
+let worker = '';
 
 
 /**
@@ -109,7 +110,11 @@ function createTaskProgressBar(serverListContainer, availableServerNumber = null
 
                 taskProgressBar.parentNode.removeChild(taskProgressBar);
 
-                if(availableServerNumber > 0)   serverStatusList[availableServerNumber] = false;
+                if(availableServerNumber > 0){
+                    serverStatusList[availableServerNumber] = false;
+                    
+                    initialiseWorker(availableServerNumber, "start")
+                }
                 
                 serverListContainer.querySelector('#server-' + availableServerNumber + " span").innerHTML = "Idle";
 
@@ -136,13 +141,13 @@ function createTaskProgressBar(serverListContainer, availableServerNumber = null
 
 
                 //If pending tasks exist, run them
-                if (pendingTasks != 0) {
-                    availableServerNumber = checkServerAvailability();
+                // if (pendingTasks != 0) {
+                //     availableServerNumber = checkServerAvailability();
                     
-                    if (availableServerNumber > 0) {
-                        runPendingTasks(availableServerNumber);
-                    }
-                }
+                //     if (availableServerNumber > 0) {
+                //         runPendingTasks(availableServerNumber);
+                //     }
+                // }
             }, 2000);
 
         }
@@ -176,6 +181,7 @@ function createServerBox(currentServerID) {
  * @param {Number} addedServerID 
  */
 function runPendingTasks(addedServerID) {
+    
     let serverListContainer = document.querySelector('.server-list-container');
     let taskListContainer = document.querySelector('.task-list-container');
     if (pendingTasks > 0) {
@@ -189,19 +195,24 @@ function runPendingTasks(addedServerID) {
 }
 
 
+
+
 /**
  * Server initialisation function
  * @param {Boolean} firstime 
  */
 function addServer(firstime = false) {
 
+    
     let numberOfServers = Object.keys(serverStatusList).length;
     let addedServerID = '';
     if(firstime)    addedServerID = numberOfServers + 1;
     else{
         addedServerID = parseInt(Object.keys(serverStatusList)[numberOfServers-1],10)+1;
     }
-    
+   
+    initialiseWorker(addedServerID, "start", true);
+   
     //If function is being called for the first time, disable remove a server button, as there needs to be a minimum of 1 server
     (firstime) ? document.querySelector('.remove-server-btn').disabled = true : document.querySelector('.remove-server-btn').disabled = false;
     (firstime) ? document.querySelector('.remove-server-btn').className += " disabled" : document.querySelector('.remove-server-btn').classList.remove("disabled");
@@ -213,7 +224,7 @@ function addServer(firstime = false) {
         if(addedServerID>0){
             serverStatusList[addedServerID] = false;
         }
-        runPendingTasks(addedServerID);
+        //runPendingTasks(addedServerID);
     }
 
     //Trigger alert popup and disable add a server button if more than 10 servers are added
@@ -240,7 +251,11 @@ function removeServer() {
         document.querySelector('.add-server-btn').disabled = false;
         document.querySelector('.add-server-btn').classList.remove("disabled");
         lastServerBox.parentNode.removeChild(lastServerBox);
-        if(lastServerID > 0)    delete serverStatusList[lastServerID];
+        if(lastServerID > 0){
+            delete serverStatusList[lastServerID];
+            initialiseWorker(lastServerID, "stop");
+
+        }
         
     }
     if(lastServerID == "2"){
@@ -288,25 +303,24 @@ function createTask(serverListContainer, noOfTasks, addedServerID) {
             let availableServerNumber = checkServerAvailability();
 
             //if a server is available, allocate a task to it
-            if (availableServerNumber >= 1) {
-                pendingTasks--;
-                let taskCounterDiv = document.querySelector('.task .task-counter');
-                if (taskCounterDiv) {
-                    taskCounterDiv.innerHTML = "(" + pendingTasks + " pending tasks)";
-                }
-                else {
-                    let newTaskCounterDiv = document.createElement('h2');
-                    newTaskCounterDiv.setAttribute("class", "task-counter");
-                    newTaskCounterDiv.innerHTML = "(" + pendingTasks + " pending tasks)";
-                    document.querySelector('.task .card-subtitle').appendChild(newTaskCounterDiv);
-                }
+            // if (availableServerNumber >= 1) {
+            //     pendingTasks--;
+            //     let taskCounterDiv = document.querySelector('.task .task-counter');
+            //     if (taskCounterDiv) {
+            //         taskCounterDiv.innerHTML = "(" + pendingTasks + " pending tasks)";
+            //     }
+            //     else {
+            //         let newTaskCounterDiv = document.createElement('h2');
+            //         newTaskCounterDiv.setAttribute("class", "task-counter");
+            //         newTaskCounterDiv.innerHTML = "(" + pendingTasks + " pending tasks)";
+            //         document.querySelector('.task .card-subtitle').appendChild(newTaskCounterDiv);
+            //     }
 
-                createTaskProgressBar(serverListContainer, availableServerNumber, addedServerID, i);
+            //     createTaskProgressBar(serverListContainer, availableServerNumber, addedServerID, i);
 
 
 
-            }
-            else {
+            // }
 
                 document.querySelector('.task .task-counter').innerHTML = "(" + pendingTasks + " pending tasks)";
 
@@ -340,12 +354,46 @@ function createTask(serverListContainer, noOfTasks, addedServerID) {
                 taskContainer.appendChild(deleteTaskBtn);
                 taskListContainer.appendChild(taskContainer);
 
-            }
+            
 
         }
     }
 }
 
+/**
+ * Web worker initialisation function
+ */
+function initialiseWorker(server, workerStatus, firstime = false){ 
+       
+    
+    if(firstime || worker == undefined){
+        
+        worker = new Worker("workers/worker.js");
+    }
+    worker.onmessage = e =>{
+        switch(e.data.action){
+            case "start":
+                console.log("Running pending tasks with server -"+e.data.id)
+                if(pendingTasks>0){
+                    initialiseWorker(e.data.id,"pause");
+                    runPendingTasks(e.data.id);
+                }
+                
+            break;
+            case "pause":
+                worker = undefined;
+            break;
+            case "terminate":
+                worker = undefined;
+            break;
+        }
+        
+    }
+    //console.log("Starting thread for server -"+server);
+    worker.postMessage({id:server, action:workerStatus});
+
+
+}
 
 /**
  * Task initialisation function linked to input field on frontend
