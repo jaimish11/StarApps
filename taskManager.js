@@ -5,7 +5,7 @@
 //Global config and tracking variables
 let serverStatusList = {};
 let intervalIDList = {};
-const TASK_DURATION = 10000;
+const TASK_DURATION = 5000;
 const MAX_SERVERS = 10;
 const ALERT_DURATION = 5000;
 const POLL_INTERVAL = 3000;
@@ -148,7 +148,6 @@ function createTaskProgressBar(serverListContainer, availableServerNumber = null
                     }
                     else{
                         availableServerNumber = checkServerAvailability();
-                        //debugger;
                         if (availableServerNumber > 0) {
                             taskManager([availableServerNumber]);
                         }
@@ -203,6 +202,8 @@ function getIdleServers(){
     //If a server is available, return its ID, else return -1
     return idleServers;
 }
+
+
 /**
  * 
  * Task Manager polling function to check for pending tasks
@@ -215,7 +216,6 @@ function taskManager(servers, serverRemovedFlag = false){
     let taskListContainer = document.querySelector('.task-list-container');
     
     let pollIntervalID = setInterval(()=>{
-        console.log(pollIntervalID)
         if(serverRemovedFlag && pendingTasks == 0){
             for(let i = 0;i<servers.length;i++){
                 clearInterval(pollIntervalID);
@@ -224,7 +224,6 @@ function taskManager(servers, serverRemovedFlag = false){
         }
         else{
             for(let i=0;i<servers.length;i++){
-                console.log('Polling '+servers[i]);
                 if(pendingTasks > 0){
                     clearInterval(pollIntervalID)
                     let lastTask = taskListContainer.lastElementChild;
@@ -321,15 +320,14 @@ function deleteTask(task) {
     }
 }
 
-/**
- * 
- * Task initialisation function
- * @param {Object} serverListContainer 
- * @param {Number} noOfTasks 
- * @param {Number} addedServerID 
- */
-function createTask(serverListContainer, noOfTasks, addedServerID) {
 
+
+
+/**
+ * Task initialisation function
+ */
+function addTask() {
+    let noOfTasks = document.getElementById('task-input').value;
     pendingTasks += parseInt(noOfTasks, 10);
     if (pendingTasks > 99) {
 
@@ -378,18 +376,6 @@ function createTask(serverListContainer, noOfTasks, addedServerID) {
 
         }
     }
-}
-
-
-/**
- * Task initialisation function linked to input field on frontend
- */
-function addTask() {
-    let addedServerID = Object.keys(serverStatusList).length;
-    let noOfTasks = document.getElementById('task-input').value;
-    let serverListContainer = document.querySelector('.server-list-container');
-    createTask(serverListContainer, noOfTasks, addedServerID);
-
 }
 
 //1 server is always present
